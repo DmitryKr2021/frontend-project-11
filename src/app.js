@@ -7,6 +7,7 @@ const app = () => {
     url: '',
     urlValid: true,
     loadedUrls: [],
+    error: '',
   };
 
   const elements = {
@@ -17,47 +18,27 @@ const app = () => {
 
   const watchedState = onChange(state, render(elements));
 
-  const schema = yup.object({
-    url: yup.string().url(),
-  });
+  const baseUrlSchema = yup.string().url().required();
 
-  const validate = (input) => schema.validate(
-    { url: input.value },
-  );
-
-  const schemaRepeatUrl = yup.object({
-    // url: yup.string().notOneOf(watchedState.loadedUrls),
-    url: yup.string().notOneOf(Object.values(watchedState.loadedUrls)),
-    // url: yup.string().notOneOf(['https://ru.hexlet.io/lessons.rss']),
-  });
-
-  // const schemaRepeatUrl = yup.string().notOneOf(Object.values(watchedState.loadedUrls));
-
-  // const schemaRepeatUrl = yup.string().notOneOf(['aaa', 'bbb']);
-
-  const validateRepeatUrl = (input) => schemaRepeatUrl.validate(
-    { url: input },
-  );
+  const validateUrl = (input, feedUrls) => {
+    const actualUrlSchema = baseUrlSchema.notOneOf(feedUrls);
+    return actualUrlSchema.validate(input.value);
+  };
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    console.log('urls=', Object.values(watchedState.loadedUrls));
     const { input } = elements;
-    validate(input)
+    validateUrl(input, Object.values(watchedState.loadedUrls))
       .then(() => {
         watchedState.loadedUrls.push(input.value);
         watchedState.url = input.value;
         watchedState.urlValid = true;
+        watchedState.error = '';
       })
-      .catch(() => {
+      .catch((err) => {
         watchedState.urlValid = false;
+        [watchedState.error] = err.errors;
       });
-      //.then(() => {
-        validateRepeatUrl('https://ru.hexlet.io/lessons.rss')
-        // validateRepeatUrl(input)
-          .then(() => console.log('+++++'))
-          .catch(() => console.log('------'));
-     // });
   });
 };
 

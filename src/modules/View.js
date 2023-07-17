@@ -7,27 +7,21 @@ const handleValidUrl = (elements) => {
   setTimeout(() => form.reset(), 100);
 };
 
-const handleNotValidUrl = (elements) => {
+const handleNotValidUrl = (elements, errValue) => {
   const { feedback, input } = elements;
-  feedback.textContent = 'Ссылка должна быть валидным URL';
+  const errorText = errValue === 'this must be a valid URL'
+    ? 'Ссылка должна быть валидным URL'
+    : 'RSS уже существует';
+  feedback.textContent = errorText;
   feedback.classList.add('text-danger');
   feedback.classList.remove('text-success');
   input.classList.add('is-invalid');
 };
 
 const render = (elements) => (path, value) => {
-  if (path === 'urlValid' && !value) {
-    handleNotValidUrl(elements);
+  if (path === 'error' && value) {
+    handleNotValidUrl(elements, value);
   } else { handleValidUrl(elements); }
 };
-
-
-  /* if ((watchedState.loadedUrls).includes(state.url)) {
-    feedback.textContent = 'RSS уже существует';
-    feedback.classList.add('text-danger');
-    feedback.classList.remove('text-success');
-    input.classList.add('is-invalid');
-    return;
-  } */
 
 export default render;
