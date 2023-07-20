@@ -11,7 +11,7 @@ i18n.init({
   resources,
 })
   .then((t) => {
-    texts.rssLoad = i18n.t(['rssLoaded']);
+    texts.rssLoad = i18n.t('rssLoaded');
     // texts.rssLoad = resources.translation.rssLoaded;
   });
 
