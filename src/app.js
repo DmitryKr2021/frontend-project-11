@@ -5,9 +5,8 @@ import render from './modules/View.js';
 const app = () => {
   const state = {
     url: '',
-    urlValid: true,
     loadedUrls: [],
-    error: '',
+    error: null,
   };
 
   const elements = {
@@ -17,6 +16,15 @@ const app = () => {
   };
 
   const watchedState = onChange(state, render(elements));
+
+  yup.setLocale({
+    string: {
+      url: () => ({ key: 'urlInvalid', values: {} }),
+    },
+    mixed: {
+      notOneOf: () => ({ key: 'urlExist', values: {} }),
+    },
+  });
 
   const baseUrlSchema = yup.string().url().required();
 
@@ -32,12 +40,10 @@ const app = () => {
       .then(() => {
         watchedState.loadedUrls.push(input.value);
         watchedState.url = input.value;
-        watchedState.urlValid = true;
-        watchedState.error = '';
+        watchedState.error = null;
       })
       .catch((err) => {
-        watchedState.urlValid = false;
-        [watchedState.error] = err.errors;
+        watchedState.error = err.errors[0].key;
       });
   });
 };

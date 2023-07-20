@@ -2,6 +2,7 @@ export default {
   translation: {
     languages: {
       ru: 'Русский',
+      en: 'Английский',
     },
     rssLoaded: 'RSS успешно загружен',
     errors: {

@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import resources from '../locales/resources.js';
+import resources from '../locales/index.js';
 
 const defaultLang = 'ru';
 const texts = {};
@@ -8,11 +8,13 @@ const i18n = i18next.createInstance();
 i18n.init({
   lng: defaultLang,
   debug: true,
-  resources,
+  resources: {
+    ru: resources.ru,
+    en: resources.en,
+  },
 })
-  .then((t) => {
+  .then(() => {
     texts.rssLoad = i18n.t('rssLoaded');
-    // texts.rssLoad = resources.translation.rssLoaded;
   });
 
 const handleValidUrl = (elements) => {
@@ -26,10 +28,7 @@ const handleValidUrl = (elements) => {
 
 const handleNotValidUrl = (elements, errValue) => {
   const { feedback, input } = elements;
-  const errorText = errValue === 'this must be a valid URL'
-    ? 'Ссылка должна быть валидным URL'
-    : 'RSS уже существует';
-  feedback.textContent = errorText;
+  feedback.textContent = i18n.t(`errors.validation.${errValue}`);
   feedback.classList.add('text-danger');
   feedback.classList.remove('text-success');
   input.classList.add('is-invalid');
