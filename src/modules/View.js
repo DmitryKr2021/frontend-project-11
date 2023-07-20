@@ -1,6 +1,23 @@
+import i18next from 'i18next';
+import resources from '../locales/resources.js';
+
+const defaultLang = 'ru';
+const texts = {};
+
+const i18n = i18next.createInstance();
+i18n.init({
+  lng: defaultLang,
+  debug: true,
+  resources,
+})
+  .then((t) => {
+    texts.rssLoad = i18n.t(['rssLoaded']);
+    // texts.rssLoad = resources.translation.rssLoaded;
+  });
+
 const handleValidUrl = (elements) => {
   const { feedback, form, input } = elements;
-  feedback.textContent = 'RSS успешно загружен';
+  feedback.textContent = texts.rssLoad;
   feedback.classList.remove('text-danger');
   feedback.classList.add('text-success');
   input.classList.remove('is-invalid');
