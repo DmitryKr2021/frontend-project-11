@@ -87,6 +87,7 @@ const handleNotValidUrl = (elements, errValue) => {
 };
 
 const handleValidUrl = (elements, path, value) => {
+  console.log('value=', value);
   const {
     feedback, form, input,
   } = elements;
