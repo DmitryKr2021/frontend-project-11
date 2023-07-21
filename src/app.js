@@ -7,12 +7,15 @@ const app = () => {
     url: '',
     loadedUrls: [],
     error: null,
+    loadedContents: [],
   };
 
   const elements = {
     feedback: document.querySelector('.feedback'),
     form: document.querySelector('form'),
     input: document.getElementById('url-input'),
+    feeds: document.querySelector('.feeds'),
+    posts: document.querySelector('.posts'),
   };
 
   const watchedState = onChange(state, render(elements));
@@ -33,6 +36,17 @@ const app = () => {
     return actualUrlSchema.validate(input.value);
   };
 
+  const loadData = (url) => {
+    fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
+      .then((response) => {
+        if (response.ok) return response.json();
+        throw new Error('Network response was not ok.');
+      })
+      .then((data) => {
+        watchedState.loadedContents.push(data.contents);
+      });
+  };
+
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const { input } = elements;
@@ -41,6 +55,7 @@ const app = () => {
         watchedState.loadedUrls.push(input.value);
         watchedState.url = input.value;
         watchedState.error = null;
+        loadData(watchedState.url);
       })
       .catch((err) => {
         watchedState.error = err.errors[0].key;

@@ -9,6 +9,7 @@ export default {
       validation: {
         urlInvalid: 'Link mast be valid URL',
         urlExist: 'RSS already exists',
+        noRss: 'Resource does not contain valid RSS',
       },
     },
   },
