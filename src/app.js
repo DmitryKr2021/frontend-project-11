@@ -1,5 +1,6 @@
 import onChange from 'on-change';
 import * as yup from 'yup';
+import axios from 'axios';
 import render from './modules/View.js';
 
 const app = () => {
@@ -36,7 +37,7 @@ const app = () => {
     return actualUrlSchema.validate(input.value);
   };
 
-  const loadData = (url) => {
+  /* const loadData = (url) => {
     fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
       .then((response) => {
         if (response.ok) return response.json();
@@ -45,6 +46,19 @@ const app = () => {
       .then((data) => {
         watchedState.loadedContents.push(data.contents);
       });
+  }; */
+
+  const loadData = (url) => {
+    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
+      /*.then((response) => {
+        if (response.ok) return response.json();
+       // throw new Error('Network response was not ok.');
+       console.log('resp data=', response.data);
+      })*/
+      .then((response) => {
+        watchedState.loadedContents.push(response.data.contents);
+      })
+      .catch((err) => console.log('error=', err));
   };
 
   elements.form.addEventListener('submit', (e) => {
