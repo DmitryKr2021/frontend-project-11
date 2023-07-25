@@ -21,4 +21,4 @@ to bundle your application
 
 ### Deploy
 
-https://vercel.com/dmitrykr2021/frontend-project-11-8d48/Cp6cjhYP5siQs9rPERQBL6eShTjT
+https://frontend-project-11-8d48-5h8tll4da-dmitrykr2021.vercel.app/
