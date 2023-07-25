@@ -43,6 +43,18 @@ const showFeeds = (elements, title, description) => {
   addFeed(feeds, title, description);
 };
 
+const showModal = (e, item) => {
+  const modalTitle = document.querySelector('.modal-title');
+  const modalBody = document.querySelector('.modal-body');
+  const modalFooter = document.querySelector('.modal-footer');
+  modalTitle.textContent = item.querySelector('title').textContent;
+  modalBody.textContent = item.querySelector('description').textContent;
+  modalFooter.querySelector('a').href = item.querySelector('link').textContent;
+  const a = e.target.parentNode.querySelector('a');
+  a.classList.remove('fw-bold');
+  a.classList.add('fw-normal');
+};
+
 const addPost = (posts, items, listPost = []) => {
   const listGroup = posts.querySelector('.list-group');
   items.forEach((item) => {
@@ -55,6 +67,7 @@ const addPost = (posts, items, listPost = []) => {
     ${title.textContent}</a>
     <button type="button" class="btn btn-outline-primary btn-sm" 
     data-id="2" data-bs-toggle="modal" data-bs-target="#modal">Просмотр</button>`;
+    li.querySelector('button').addEventListener('click', (e) => showModal(e, item));
     listPost.push(li);
   });
   listPost.forEach((item) => listGroup.prepend(item));
@@ -89,6 +102,7 @@ const handleValidUrl = (elements, path, value, previousValue) => {
 
   if (path === 'loadedContents') { // add new RSS
     const dataContent = value.at(-1).content;
+    console.log(dataContent);
     const [title] = dataContent.getElementsByTagName('title');
     const [description] = dataContent.getElementsByTagName('description');
     showFeeds(elements, title, description);
