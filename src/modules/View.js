@@ -2,7 +2,6 @@ import i18next from 'i18next';
 import resources from '../locales/index.js';
 
 const defaultLang = 'ru';
-const texts = {};
 
 const i18n = i18next.createInstance();
 i18n.init({
@@ -13,9 +12,7 @@ i18n.init({
     en: resources.en,
   },
 })
-  .then(() => {
-    texts.rssLoad = i18n.t('rssLoaded');
-  });
+  .then(() => {});
 
 const listFeed = [];
 const addFeed = (feeds, title, description) => {
@@ -46,8 +43,7 @@ const showFeeds = (elements, title, description) => {
   addFeed(feeds, title, description);
 };
 
-const listPost = [];
-const addPost = (posts, items) => {
+const addPost = (posts, items, listPost = []) => {
   const listGroup = posts.querySelector('.list-group');
   items.forEach((item) => {
     const title = item.querySelector('title');
@@ -76,8 +72,6 @@ const showPosts = (elements, items) => {
   addPost(posts, items);
 };
 
-const parse = (parser, data, format) => parser.parseFromString(data, format);
-
 const handleNotValidUrl = (elements, errValue) => {
   const { feedback, input } = elements;
   feedback.textContent = i18n.t(`errors.validation.${errValue}`);
@@ -86,35 +80,44 @@ const handleNotValidUrl = (elements, errValue) => {
   input.classList.add('is-invalid');
 };
 
-const handleValidUrl = (elements, path, value) => {
-  console.log('value=', value);
+const handleValidUrl = (elements, path, value, previousValue) => {
   const {
     feedback, form, input,
   } = elements;
-  if (path === 'loadedContents') {
-    const parsedContent = parse(new DOMParser(), value.at(-1), 'text/xml');
-    console.log(parsedContent);
-    if (parsedContent.getElementsByTagName('parsererror')[0]) {
-      handleNotValidUrl(elements, 'noRss');
-    } else {
-      const [title] = parsedContent.getElementsByTagName('title');
-      const [description] = parsedContent.getElementsByTagName('description');
-      showFeeds(elements, title, description);
-      const items = Array.from(parsedContent.getElementsByTagName('item'));
-      showPosts(elements, items);
-      feedback.textContent = texts.rssLoad;
-      feedback.classList.remove('text-danger');
-      feedback.classList.add('text-success');
-      input.classList.remove('is-invalid');
-      setTimeout(() => form.reset(), 100);
-    }
+
+  const getItems = (data) => Array.from(data.getElementsByTagName('item'));
+
+  if (path === 'loadedContents') { // add new RSS
+    const dataContent = value.at(-1).content;
+    const [title] = dataContent.getElementsByTagName('title');
+    const [description] = dataContent.getElementsByTagName('description');
+    showFeeds(elements, title, description);
+    const items = getItems(dataContent);
+    showPosts(elements, items);
+    feedback.textContent = i18n.t('rssLoaded');
+    feedback.classList.remove('text-danger');
+    feedback.classList.add('text-success');
+    input.classList.remove('is-invalid');
+    setTimeout(() => form.reset(), 100);
+  }
+
+  if (path.startsWith('loadedContents.')) { // update posts
+    const newItems = getItems(value);
+    const previousItems = getItems(previousValue);
+    const previousTitles = previousItems.map((item) => item.querySelector('title').textContent);
+    newItems.forEach((item) => {
+      const title = item.querySelector('title').textContent;
+      if (!previousTitles.includes(title)) {
+        addPost(elements.posts, [item]);
+      }
+    });
   }
 };
 
-const render = (elements) => (path, value) => {
+const render = (elements) => (path, value, previousValue) => {
   if (path === 'error' && value) {
     handleNotValidUrl(elements, value);
-  } else { handleValidUrl(elements, path, value); }
+  } else { handleValidUrl(elements, path, value, previousValue); }
 };
 
 export default render;

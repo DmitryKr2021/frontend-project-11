@@ -37,26 +37,38 @@ const app = () => {
     return actualUrlSchema.validate(input.value);
   };
 
-  /* const loadData = (url) => {
-    fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
-      .then((response) => {
-        if (response.ok) return response.json();
-        throw new Error('Network response was not ok.');
-      })
-      .then((data) => {
-        watchedState.loadedContents.push(data.contents);
-      });
-  }; */
+  const parse = (parser, data, format) => {
+    const result = parser.parseFromString(data, format);
+    return result.getElementsByTagName('parsererror')[0] ? false : result;
+  };
 
   const loadData = (url) => {
+    const updatePost = (loadedUrl) => {
+      setTimeout(() => {
+        loadData(loadedUrl);
+      }, 5000);
+    };
+
     axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
-      /*.then((response) => {
-        if (response.ok) return response.json();
-       // throw new Error('Network response was not ok.');
-       console.log('resp data=', response.data);
-      })*/
       .then((response) => {
-        watchedState.loadedContents.push(response.data.contents);
+        const parseResult = parse(new DOMParser(), response.data.contents, 'text/xml');
+        if (!parseResult) {
+          watchedState.error = 'noRss';
+          return;
+        }
+        const loaded = watchedState.loadedContents.find((elem) => elem.url === url);
+        // if RSS loaded => update
+        if (loaded) { loaded.content = parseResult; } else {
+        // if RSS is new => load
+          watchedState.loadedContents.push({
+            url,
+            content: parseResult,
+          });
+          watchedState.loadedUrls.push(url);
+          watchedState.error = null;
+          watchedState.url = url;
+        }
+        updatePost(url);
       })
       .catch((err) => console.log('error=', err));
   };
@@ -66,10 +78,7 @@ const app = () => {
     const { input } = elements;
     validateUrl(input, Object.values(watchedState.loadedUrls))
       .then(() => {
-        watchedState.loadedUrls.push(input.value);
-        watchedState.url = input.value;
-        watchedState.error = null;
-        loadData(watchedState.url);
+        loadData(input.value);
       })
       .catch((err) => {
         watchedState.error = err.errors[0].key;
