@@ -102,7 +102,6 @@ const handleValidUrl = (elements, path, value, previousValue) => {
 
   if (path === 'loadedContents') { // add new RSS
     const dataContent = value.at(-1).content;
-    console.log(dataContent);
     const [title] = dataContent.getElementsByTagName('title');
     const [description] = dataContent.getElementsByTagName('description');
     showFeeds(elements, title, description);

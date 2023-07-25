@@ -70,7 +70,7 @@ const app = () => {
         }
         updatePost(url);
       })
-      .catch((err) => console.log('error=', err));
+      .catch((err) => console.log('Ошибка сети', err));
   };
 
   elements.form.addEventListener('submit', (e) => {
