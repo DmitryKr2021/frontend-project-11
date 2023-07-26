@@ -10,4 +10,4 @@
 - https://aljazeera.com/xml/rss/all.xml
 - https://buzzfeed.com/world.xml
 
-#### [See deploy](https://frontend-project-11-8d48-5h8tll4da-dmitrykr2021.vercel.app/)
+#### [See deploy](https://vercel.com/dmitrykr2021/frontend-project-11-8d48)
