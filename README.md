@@ -13,5 +13,7 @@
 ![image](https://github.com/DmitryKr2021/frontend-project-11/assets/79040401/ed8317f3-f94e-4df5-88de-5118860cdaee)
 
 #### Click post title or button to see a post
+![image](https://github.com/DmitryKr2021/frontend-project-11/assets/79040401/ef17ae14-db67-4de9-9c21-d88f90c4dec8)
+
 
 #### [See deploy](https://vercel.com/dmitrykr2021/frontend-project-11-8d48)
