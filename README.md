@@ -4,6 +4,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/eafd11818fd3b17c1ab7/maintainability)](https://codeclimate.com/github/DmitryKr2021/frontend-project-11/maintainability)
 
 ## This service for aggregating RSS feeds allows you to add an unlimited number of RSS feeds
+![image](https://github.com/DmitryKr2021/frontend-project-11/assets/79040401/7f64cba4-87fc-4bcd-a5e8-91630fb55b2f)
 
 ### Paste the RSS URL into the input field, for example
 
