@@ -39,7 +39,10 @@ const showModal = (e, post) => {
   a.classList.add('fw-normal');
 };
 
-const addPosts = (posts, feedPosts, feedDescription) => {
+const addPosts = (elements, i18n, feedPosts, feedDescription) => {
+  const {
+    feedback, input, posts,
+  } = elements;
   let ul = posts.querySelector(`[data-description = '${feedDescription}']`);
   if (!ul) {
     ul = document.createElement('ul');
@@ -65,9 +68,14 @@ const addPosts = (posts, feedPosts, feedDescription) => {
       ul.prepend(li);
     }
   });
+  feedback.textContent = i18n.t('rssLoaded');
+  feedback.classList.remove('text-danger');
+  feedback.classList.add('text-success');
+  input.classList.remove('is-invalid');
 };
 
 let counter = 0;
+
 const initPosts = (elements) => {
   if (counter > 0) { return; }
   const { posts } = elements;
@@ -79,10 +87,10 @@ const initPosts = (elements) => {
   counter = 1;
 };
 
-const updatePosts = (elements, value) => {
+const updatePosts = (elements, i18n, value) => {
   const { feedDescription } = value;
   const { posts } = value;
-  addPosts(elements.posts, posts, feedDescription);
+  addPosts(elements, i18n, posts, feedDescription);
 };
 
 const handleNotValidUrl = (elements, i18n, errValue) => {
@@ -94,21 +102,14 @@ const handleNotValidUrl = (elements, i18n, errValue) => {
 };
 
 const handleValidUrl = (elements, i18n, value) => {
-  const {
-    feedback, form, input, posts,
-  } = elements;
   const lastValue = value.at(-1);
   const { feedTitle } = lastValue;
   const { feedDescription } = lastValue;
   const { feedPosts } = lastValue;
   showFeed(elements, feedTitle, feedDescription);
   initPosts(elements);
-  addPosts(posts, feedPosts, feedDescription);
-  feedback.textContent = i18n.t('rssLoaded');
-  feedback.classList.remove('text-danger');
-  feedback.classList.add('text-success');
-  input.classList.remove('is-invalid');
-  setTimeout(() => form.reset(), 100);
+  addPosts(elements, i18n, feedPosts, feedDescription);
+  setTimeout(() => elements.form.reset(), 100);
 };
 
 const render = (elements, i18n) => (path, value) => {
@@ -131,7 +132,7 @@ const render = (elements, i18n) => (path, value) => {
       break;
     case 'loadedFeeds':
       handleValidUrl(elements, i18n, value); break;
-    case 'loadedPosts': updatePosts(elements, value); break;
+    case 'loadedPosts': updatePosts(elements, i18n, value); break;
     default: break;
   }
 };
