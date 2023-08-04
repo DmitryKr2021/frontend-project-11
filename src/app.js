@@ -1,25 +1,10 @@
 import onChange from 'on-change';
 import * as yup from 'yup';
 import axios from 'axios';
-import render from './modules/View.js';
+import render from './modules/view.js';
 
-const app = () => {
-  const state = {
-    url: '',
-    loadedUrls: [],
-    error: null,
-    loadedContents: [],
-  };
-
-  const elements = {
-    feedback: document.querySelector('.feedback'),
-    form: document.querySelector('form'),
-    input: document.getElementById('url-input'),
-    feeds: document.querySelector('.feeds'),
-    posts: document.querySelector('.posts'),
-  };
-
-  const watchedState = onChange(state, render(elements));
+const app = (state, elements, i18n) => {
+  const watchedState = onChange(state, render(elements, i18n));
 
   yup.setLocale({
     string: {
@@ -37,53 +22,96 @@ const app = () => {
     return actualUrlSchema.validate(input.value);
   };
 
-  const parse = (parser, data, format) => {
-    const result = parser.parseFromString(data, format);
+  const parse = (data, format) => {
+    const result = new DOMParser().parseFromString(data, format);
     return result.getElementsByTagName('parsererror')[0] ? false : result;
   };
 
-  const loadData = (url) => {
-    const updatePost = (loadedUrl) => {
-      setTimeout(() => {
-        loadData(loadedUrl);
-      }, 5000);
-    };
+  const getNewUrl = (url) => {
+    const baseUrl = 'https://allorigins.hexlet.app';
+    return new URL(`/get?disableCache=true&url=${url}`, baseUrl);
+  };
 
-    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
+  const loadPosts = (feed) => {
+    const { feedUrl } = feed;
+    const { feedDescription } = feed;
+    const tempArr = [];
+    const tempObj = {};
+    axios.get(getNewUrl(feedUrl))
       .then((response) => {
-        const parseResult = parse(new DOMParser(), response.data.contents, 'text/xml');
+        const parseResult = parse(response.data.contents, 'text/xml');
+        const arr = Array.from(parseResult.getElementsByTagName('item'));
+        tempObj.feedDescription = feedDescription;
+        arr.forEach((item) => {
+          const newPost = {
+            postLink: item.querySelector('link').textContent,
+            postTitle: item.querySelector('title').textContent,
+            postDescription: item.querySelector('description').textContent,
+          };
+          tempArr.push(newPost);
+        });
+        tempObj.posts = tempArr.slice();
+        watchedState.loadedPosts = { ...tempObj };
+      })
+      .catch(() => {});
+  };
+
+  const loadFeed = (url) => {
+    watchedState.loadProcess.state = 'loadInProcess';
+    axios.get(getNewUrl(url))
+      .then((response) => {
+        const parseResult = parse(response.data.contents, 'text/xml');
         if (!parseResult) {
+          watchedState.loadProcess.state = 'failedLoad';
           watchedState.error = 'noRss';
           return;
         }
-        const loaded = watchedState.loadedContents.find((elem) => elem.url === url);
-        // if RSS loaded => update
-        if (loaded) { loaded.content = parseResult; } else {
-        // if RSS is new => load
-          watchedState.loadedContents.push({
-            url,
-            content: parseResult,
-          });
-          watchedState.loadedUrls.push(url);
-          watchedState.error = null;
-          watchedState.url = url;
-        }
-        updatePost(url);
-      })
-      .catch((err) => console.log('Ошибка сети', err));
-  };
+        watchedState.loadProcess.state = 'successLoad';
 
-  elements.form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const { input } = elements;
-    validateUrl(input, Object.values(watchedState.loadedUrls))
-      .then(() => {
-        loadData(input.value);
+        const channel = parseResult.querySelector('channel');
+        const feedTitle = channel.querySelector('title').textContent;
+        const feedDescription = channel.querySelector('description').textContent;
+        const arr = Array.from(parseResult.getElementsByTagName('item'));
+        const newFeed = {
+          feedUrl: url,
+          feedTitle,
+          feedDescription,
+          feedPosts: arr.map((elem) => ({
+            postLink: elem.querySelector('link').textContent,
+            postTitle: elem.querySelector('title').textContent,
+            postDescription: elem.querySelector('description').textContent,
+          })),
+        };
+        watchedState.loadedFeeds.push(newFeed);
+        watchedState.loadedUrls.push(url);
+        watchedState.error = null;
+        watchedState.url = url;
       })
       .catch((err) => {
-        watchedState.error = err.errors[0].key;
+        watchedState.loadProcess.state = 'failedLoad';
+        console.log('Ошибка сети', err);
       });
-  });
+  };
+
+  const updatePost = (feeds = watchedState.loadedFeeds) => {
+    feeds.forEach((feed) => {
+      try {
+        loadPosts(feed);
+      } catch { throw new Error('load failed'); }
+    });
+    setTimeout(updatePost, 5000);
+  };
+  updatePost(watchedState.loadedFeeds);
+
+  const { input } = elements;
+  validateUrl(input, Object.values(watchedState.loadedUrls))
+    .then(() => {
+      watchedState.loadProcess.state = 'readyToLoad';
+      loadFeed(input.value);
+    })
+    .catch((err) => {
+      watchedState.error = err.errors[0].key;
+    });
 };
 
 export default app;
