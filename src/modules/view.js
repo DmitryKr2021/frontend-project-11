@@ -88,8 +88,7 @@ const initPosts = (elements) => {
 };
 
 const updatePosts = (elements, i18n, value) => {
-  const { feedDescription } = value;
-  const { posts } = value;
+  const { feedDescription, posts } = value;
   addPosts(elements, i18n, posts, feedDescription);
 };
 
@@ -103,9 +102,7 @@ const handleNotValidUrl = (elements, i18n, errValue) => {
 
 const handleValidUrl = (elements, i18n, value) => {
   const lastValue = value.at(-1);
-  const { feedTitle } = lastValue;
-  const { feedDescription } = lastValue;
-  const { feedPosts } = lastValue;
+  const { feedTitle, feedDescription, feedPosts } = lastValue;
   showFeed(elements, feedTitle, feedDescription);
   initPosts(elements);
   addPosts(elements, i18n, feedPosts, feedDescription);

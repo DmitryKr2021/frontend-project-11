@@ -33,8 +33,7 @@ const app = (state, elements, i18n) => {
   };
 
   const loadPosts = (feed) => {
-    const { feedUrl } = feed;
-    const { feedDescription } = feed;
+    const { feedUrl, feedDescription } = feed;
     const tempArr = [];
     const tempObj = {};
     axios.get(getNewUrl(feedUrl))
@@ -94,20 +93,23 @@ const app = (state, elements, i18n) => {
   };
 
   const updatePost = (feeds = watchedState.loadedFeeds) => {
-    feeds.forEach((feed) => {
-      try {
-        loadPosts(feed);
-      } catch { throw new Error('load failed'); }
-    });
-    setTimeout(updatePost, 5000);
+    if (watchedState.error !== 'urlExist') {
+      feeds.forEach((feed) => {
+        try {
+          loadPosts(feed);
+        } catch { throw new Error('load failed'); }
+      });
+      setTimeout(updatePost, 5000);
+    }
   };
-  updatePost(watchedState.loadedFeeds);
 
   const { input } = elements;
   validateUrl(input, Object.values(watchedState.loadedUrls))
     .then(() => {
+      watchedState.error = null;
       watchedState.loadProcess.state = 'readyToLoad';
       loadFeed(input.value);
+      updatePost(watchedState.loadedFeeds);
     })
     .catch((err) => {
       watchedState.error = err.errors[0].key;

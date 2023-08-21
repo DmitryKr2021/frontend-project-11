@@ -10,6 +10,7 @@ export default {
         urlInvalid: 'Ссылка должна быть валидным URL',
         urlExist: 'RSS уже существует',
         noRss: 'Ресурс не содержит валидный RSS',
+        null: '',
       },
     },
   },
