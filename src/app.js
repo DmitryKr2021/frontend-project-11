@@ -93,7 +93,6 @@ const app = (state, elements, i18n) => {
   };
 
   const updatePost = (feeds = watchedState.loadedFeeds) => {
-    // if (watchedState.error !== 'urlExist') {
     if (!watchedState.error) {
       feeds.forEach((feed) => {
         try {
