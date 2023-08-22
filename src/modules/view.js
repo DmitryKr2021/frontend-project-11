@@ -119,7 +119,7 @@ const render = (elements, i18n) => (path, value) => {
       switch (value) {
         case 'readyToLoad':
         case 'loadInProcess':
-          elements.input.setAttribute('disabled', '');
+          // elements.input.setAttribute('disabled', '');
           break;
         case 'successLoad':
           elements.input.removeAttribute('disabled');
