@@ -101,7 +101,6 @@ const app = (state, elements, i18n) => {
         try {
           loadPosts(feed);
           setTimeout(updatePost, 5000);
-        // } catch { throw new Error('load failed'); }
         } catch {
           watchedState.error = 'disconnect';
           throw new Error('Ошибка сети');

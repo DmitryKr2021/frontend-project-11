@@ -106,7 +106,6 @@ const handleValidUrl = (elements, i18n, value) => {
   showFeed(elements, feedTitle, feedDescription);
   initPosts(elements);
   addPosts(elements, i18n, feedPosts, feedDescription);
-  // setTimeout(() => elements.form.reset(), 100);
   elements.form.reset();
 };
 
