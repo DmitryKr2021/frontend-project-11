@@ -53,6 +53,7 @@ const app = (state, elements, i18n) => {
         watchedState.loadedPosts = { ...tempObj };
       })
       .catch(() => {
+        watchedState.error = 'disconnect';
         throw new Error('Ошибка сети');
       });
   };
@@ -88,10 +89,9 @@ const app = (state, elements, i18n) => {
         watchedState.error = null;
         watchedState.url = url;
       })
-      .catch((err) => {
+      .catch(() => {
         watchedState.loadProcess.state = 'failedLoad';
-        console.log('Ошибка сети', err);
-        throw new Error('Ошибка сети');
+        watchedState.error = 'disconnect';
       });
   };
 
@@ -102,7 +102,10 @@ const app = (state, elements, i18n) => {
           loadPosts(feed);
           setTimeout(updatePost, 5000);
         // } catch { throw new Error('load failed'); }
-        } catch { throw new Error('Ошибка сети'); }
+        } catch {
+          watchedState.error = 'disconnect';
+          throw new Error('Ошибка сети');
+        }
       });
     }
   };
