@@ -52,7 +52,9 @@ const app = (state, elements, i18n) => {
         tempObj.posts = tempArr.slice();
         watchedState.loadedPosts = { ...tempObj };
       })
-      .catch(() => {});
+      .catch(() => {
+        throw new Error('Ошибка сети');
+      });
   };
 
   const loadFeed = (url) => {
@@ -89,6 +91,7 @@ const app = (state, elements, i18n) => {
       .catch((err) => {
         watchedState.loadProcess.state = 'failedLoad';
         console.log('Ошибка сети', err);
+        throw new Error('Ошибка сети');
       });
   };
 
