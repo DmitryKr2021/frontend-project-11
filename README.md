@@ -19,6 +19,4 @@
 
 ![image](https://github.com/DmitryKr2021/frontend-project-11/assets/79040401/ef17ae14-db67-4de9-9c21-d88f90c4dec8)
 
-## [See deploy](https://vercel.com/dmitrykr2021/frontend-project-11-8d48)
-
-## [See deploy2](https://frontend-project-11-8d48.vercel.app/)
+## [See deploy](https://frontend-project-11-8d48.vercel.app/)
