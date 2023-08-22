@@ -97,23 +97,28 @@ const app = (state, elements, i18n) => {
       feeds.forEach((feed) => {
         try {
           loadPosts(feed);
+          setTimeout(updatePost, 5000);
         } catch { throw new Error('load failed'); }
       });
-      setTimeout(updatePost, 5000);
     }
   };
 
   const { input } = elements;
-  validateUrl(input, Object.values(watchedState.loadedUrls))
-    .then(() => {
-      watchedState.error = null;
-      watchedState.loadProcess.state = 'readyToLoad';
-      loadFeed(input.value);
-      updatePost(watchedState.loadedFeeds);
-    })
-    .catch((err) => {
-      watchedState.error = err.errors[0].key;
-    });
+
+  const loadFromInputAddr = () => {
+    validateUrl(input, Object.values(watchedState.loadedUrls))
+      .then(() => {
+        watchedState.error = null;
+        watchedState.loadProcess.state = 'readyToLoad';
+        loadFeed(input.value);
+        updatePost(watchedState.loadedFeeds);
+      })
+      .catch((err) => {
+        watchedState.error = err.errors[0].key;
+      });
+  };
+
+  input.addEventListener('change', loadFromInputAddr());
 };
 
 export default app;
