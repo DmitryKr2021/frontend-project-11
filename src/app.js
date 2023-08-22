@@ -103,7 +103,7 @@ const app = (state, elements, i18n) => {
     }
   };
 
-  const { input } = elements;
+  const { input, form } = elements;
 
   const loadFromInputAddr = () => {
     validateUrl(input, Object.values(watchedState.loadedUrls))
@@ -111,14 +111,14 @@ const app = (state, elements, i18n) => {
         watchedState.error = null;
         watchedState.loadProcess.state = 'readyToLoad';
         loadFeed(input.value);
-        updatePost(watchedState.loadedFeeds);
+        setTimeout(updatePost, 5000);
       })
       .catch((err) => {
         watchedState.error = err.errors[0].key;
       });
   };
 
-  input.addEventListener('change', loadFromInputAddr());
+  form.addEventListener('submit', loadFromInputAddr());
 };
 
 export default app;
