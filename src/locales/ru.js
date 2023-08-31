@@ -6,12 +6,15 @@ export default {
     },
     rssLoaded: 'RSS успешно загружен',
     errors: {
-      validation: {
+      formError: {
+        null: '',
         urlInvalid: 'Ссылка должна быть валидным URL',
         urlExist: 'RSS уже существует',
+      },
+      loadError: {
+        null: '',
         noRss: 'Ресурс не содержит валидный RSS',
         disconnect: 'Ошибка сети',
-        null: '',
       },
     },
   },

@@ -2,6 +2,7 @@ import onChange from 'on-change';
 import * as yup from 'yup';
 import axios from 'axios';
 import render from './modules/view.js';
+import parse from './modules/parse.js';
 
 const app = (state, elements, i18n) => {
   const watchedState = onChange(state, render(elements, i18n));
@@ -22,109 +23,52 @@ const app = (state, elements, i18n) => {
     return actualUrlSchema.validate(input.value);
   };
 
-  const parse = (data, format) => {
-    const result = new DOMParser().parseFromString(data, format);
-    return result.getElementsByTagName('parsererror')[0] ? false : result;
-  };
-
   const getNewUrl = (url) => {
     const baseUrl = 'https://allorigins.hexlet.app';
-    return new URL(`/get?disableCache=true&url=${url}`, baseUrl);
-  };
-
-  const loadPosts = (feed) => {
-    const { feedUrl, feedDescription } = feed;
-    const tempArr = [];
-    const tempObj = {};
-    axios.get(getNewUrl(feedUrl))
-      .then((response) => {
-        const parseResult = parse(response.data.contents, 'text/xml');
-        const arr = Array.from(parseResult.getElementsByTagName('item'));
-        tempObj.feedDescription = feedDescription;
-        arr.forEach((item) => {
-          const newPost = {
-            postLink: item.querySelector('link').textContent,
-            postTitle: item.querySelector('title').textContent,
-            postDescription: item.querySelector('description').textContent,
-          };
-          tempArr.push(newPost);
-        });
-        tempObj.posts = tempArr.slice();
-        watchedState.loadedPosts = { ...tempObj };
-      })
-      .catch(() => {
-        watchedState.error = 'disconnect';
-        throw new Error('Ошибка сети');
-      });
+    const params = new URLSearchParams({ disableCache: true, url }).toString();
+    return new URL(`/get?${params}`, baseUrl);
   };
 
   const loadFeed = (url) => {
-    watchedState.loadProcess.state = 'loadInProcess';
+    watchedState.loadState = 'loadInProcess';
     axios.get(getNewUrl(url))
       .then((response) => {
-        const parseResult = parse(response.data.contents, 'text/xml');
+        const parseResult = parse(response.data.contents, 'text/xml', 'feed');
         if (!parseResult) {
-          watchedState.loadProcess.state = 'failedLoad';
-          watchedState.error = 'noRss';
+          watchedState.loadState = 'failedLoad';
+          watchedState.loadError = 'noRss';
           return;
         }
-        watchedState.loadProcess.state = 'successLoad';
-
-        const channel = parseResult.querySelector('channel');
-        const feedTitle = channel.querySelector('title').textContent;
-        const feedDescription = channel.querySelector('description').textContent;
-        const arr = Array.from(parseResult.getElementsByTagName('item'));
-        const newFeed = {
-          feedUrl: url,
-          feedTitle,
-          feedDescription,
-          feedPosts: arr.map((elem) => ({
-            postLink: elem.querySelector('link').textContent,
-            postTitle: elem.querySelector('title').textContent,
-            postDescription: elem.querySelector('description').textContent,
-          })),
-        };
+        watchedState.loadState = 'successLoad';
+        const newFeed = { feedUrl: url, ...parseResult };
         watchedState.loadedFeeds.push(newFeed);
         watchedState.loadedUrls.push(url);
-        watchedState.error = null;
+        watchedState.loadError = null;
         watchedState.url = url;
       })
       .catch(() => {
-        watchedState.loadProcess.state = 'failedLoad';
-        watchedState.error = 'disconnect';
+        watchedState.loadState = 'failedLoad';
+        watchedState.loadError = 'disconnect';
       });
-  };
-
-  const updatePost = (feeds = watchedState.loadedFeeds) => {
-    if (!watchedState.error) {
-      feeds.forEach((feed) => {
-        try {
-          loadPosts(feed);
-          setTimeout(updatePost, 5000);
-        } catch {
-          watchedState.error = 'disconnect';
-          throw new Error('Ошибка сети');
-        }
-      });
-    }
   };
 
   const { input, form } = elements;
 
-  const loadFromInputAddr = () => {
+  const onSubmit = () => {
     validateUrl(input, Object.values(watchedState.loadedUrls))
       .then(() => {
-        watchedState.error = null;
-        watchedState.loadProcess.state = 'readyToLoad';
+        watchedState.formError = null;
+        watchedState.loadState = 'readyToLoad';
+      })
+      .then(() => {
         loadFeed(input.value);
-        setTimeout(updatePost, 5000);
       })
       .catch((err) => {
-        watchedState.error = err.errors[0].key;
+        watchedState.formError = err.errors[0].key;
       });
   };
 
-  form.addEventListener('submit', loadFromInputAddr());
+  form.addEventListener('submit', onSubmit());
 };
 
 export default app;
