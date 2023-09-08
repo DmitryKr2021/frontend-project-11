@@ -1,6 +1,8 @@
-const parse = (data, format, content) => {
-  const result = new DOMParser().parseFromString(data, format);
-  if (result.getElementsByTagName('parsererror')[0]) { return false; }
+const parse = (data) => {
+  const result = new DOMParser().parseFromString(data, 'text/xml');
+  if (result.getElementsByTagName('parsererror')[0]) {
+    throw (result.getElementsByTagName('parsererror')[0]);
+  }
   const arr = Array.from(result.getElementsByTagName('item'));
   const posts = {
     posts: arr.map((post) => ({
@@ -9,18 +11,14 @@ const parse = (data, format, content) => {
       postDescription: post.querySelector('description').textContent,
     })),
   };
-
-  if (content === 'feed') {
-    const channel = result.querySelector('channel');
-    const feedTitle = channel.querySelector('title').textContent;
-    const feedDescription = channel.querySelector('description').textContent;
-    const feed = {
-      feedTitle,
-      feedDescription,
-      feedPosts: posts.posts,
-    };
-    return feed;
-  }
-  return posts;
+  const channel = result.querySelector('channel');
+  const feedTitle = channel.querySelector('title').textContent;
+  const feedDescription = channel.querySelector('description').textContent;
+  const feed = {
+    feedTitle,
+    feedDescription,
+    feedPosts: posts.posts,
+  };
+  return feed;
 };
 export default parse;

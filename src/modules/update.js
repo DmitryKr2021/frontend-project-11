@@ -16,28 +16,27 @@ const update = (state, elements, i18n) => {
     const { feedUrl, feedDescription } = feed;
     axios.get(getNewUrl(feedUrl))
       .then((response) => {
-        const parseResult = parse(response.data.contents, 'text/xml', 'post');
-        watchedState.loadedPosts = { feedDescription, ...parseResult };
+        const parseResult = parse(response.data.contents);
+        const { feedPosts } = parseResult;
+        watchedState.load.posts = { feedDescription, ...feedPosts };
+        watchedState.load.error = null;
       })
-      .catch(() => {
-        watchedState.loadError = 'disconnect';
-        throw new Error('Ошибка сети');
+      .catch((e) => {
+        watchedState.load.state = 'failedLoad';
+        watchedState.load.error = e.tagName === 'parsererror' ? 'noRss' : 'disconnect';
+        throw new Error(watchedState.load.error);
       });
   };
 
-  const updatePost = (feeds = watchedState.loadedFeeds) => {
-    if (!watchedState.loadError) {
-      feeds.forEach((feed) => {
-        try {
-          loadPosts(feed);
-          setTimeout(updatePost, 5000);
-        } catch {
-          watchedState.loadError = 'disconnect';
-          throw new Error('Ошибка сети');
-        }
-      });
+  const updatePost = (feeds = watchedState.load.feeds) => {
+    if (!watchedState.load.error) {
+      const promiseAll = Promise.all(feeds.map((feed) => loadPosts(feed)));
+      promiseAll
+        .then(watchedState.load.error = null)
+        .finally(setTimeout(() => updatePost(), 5000));
     }
   };
-  setTimeout(updatePost, 5000);
+
+  updatePost();
 };
 export default update;

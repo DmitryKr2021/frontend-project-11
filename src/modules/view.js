@@ -53,9 +53,9 @@ const addPosts = (elements, i18n, feeds, update) => {
   };
 
   if (!update) {
+    const { feedback, input, posts } = elements;
     feeds.forEach((item) => {
       const { feedPosts, feedDescription } = item;
-      const { posts } = elements;
       const ul = document.createElement('ul');
       ul.classList.add('list-group', 'border-0', 'rounded-0');
       ul.setAttribute('data-description', feedDescription);
@@ -65,24 +65,22 @@ const addPosts = (elements, i18n, feeds, update) => {
         createList(post, postLink, postTitle, ul);
       });
     });
+    feedback.textContent = i18n.t('rssLoaded');
+    feedback.classList.remove('text-danger');
+    feedback.classList.add('text-success');
+    input.classList.remove('is-invalid');
   } else {
-    const {
-      feedback, input, posts,
-    } = elements;
+    const { posts } = elements;
     const ul = posts.querySelector(`[data-description = '${feeds.feedDescription}']`);
     const oldPosts = Array.from(ul.querySelectorAll('li'));
     const oldTitles = oldPosts.map((post) => post.querySelector('a').textContent.trim());
-
-    feeds.posts.forEach((post) => {
+    const loadedPosts = Object.values(feeds).slice(0, -1);
+    loadedPosts.forEach((post) => {
       const { postTitle, postLink } = post;
       if (!oldTitles.includes(postTitle)) {
         createList(post, postLink, postTitle, ul);
       }
     });
-    feedback.textContent = i18n.t('rssLoaded');
-    feedback.classList.remove('text-danger');
-    feedback.classList.add('text-success');
-    input.classList.remove('is-invalid');
   }
 };
 
@@ -95,7 +93,7 @@ const showPosts = (elements) => {
   </div>`;
 };
 
-const handleError = (elements, i18n, errValue, errorType) => {
+const handleError = (elements, i18n, errorType, errValue) => {
   const { feedback, input } = elements;
   input.removeAttribute('disabled');
   feedback.textContent = i18n.t(`errors.${errorType}.${errValue}`);
@@ -113,11 +111,11 @@ const handleValidUrl = (elements, i18n, value) => {
 
 const render = (elements, i18n) => (path, value) => {
   switch (path) {
-    case 'formError':
-    case 'loadError':
-      handleError(elements, i18n, value, path);
+    case 'form.error':
+    case 'load.error':
+      handleError(elements, i18n, path, value);
       break;
-    case 'loadProcess.state':
+    case 'load.state':
       switch (value) {
         case 'readyToLoad':
         case 'loadInProcess':
@@ -129,9 +127,9 @@ const render = (elements, i18n) => (path, value) => {
         default: break;
       }
       break;
-    case 'loadedFeeds':
+    case 'load.feeds':
       handleValidUrl(elements, i18n, value); break;
-    case 'loadedPosts': addPosts(elements, i18n, value, true); break;
+    case 'load.posts': addPosts(elements, i18n, value, true); break;
     default: break;
   }
 };
