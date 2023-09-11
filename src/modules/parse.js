@@ -1,23 +1,27 @@
 const parse = (data) => {
   const result = new DOMParser().parseFromString(data, 'text/xml');
-  if (result.getElementsByTagName('parsererror')[0]) {
-    throw (result.getElementsByTagName('parsererror')[0]);
+  const parseError = result.querySelector('parsererror');
+  if (parseError) {
+    const error = new Error(parseError.textContent);
+    error.isParsingError = true;
+    error.data = data;
+    throw parseError;
   }
   const arr = Array.from(result.getElementsByTagName('item'));
   const posts = {
     posts: arr.map((post) => ({
-      postLink: post.querySelector('link').textContent,
-      postTitle: post.querySelector('title').textContent,
-      postDescription: post.querySelector('description').textContent,
+      link: post.querySelector('link').textContent,
+      title: post.querySelector('title').textContent,
+      description: post.querySelector('description').textContent,
     })),
   };
   const channel = result.querySelector('channel');
-  const feedTitle = channel.querySelector('title').textContent;
-  const feedDescription = channel.querySelector('description').textContent;
+  const title = channel.querySelector('title').textContent;
+  const description = channel.querySelector('description').textContent;
   const feed = {
-    feedTitle,
-    feedDescription,
-    feedPosts: posts.posts,
+    title,
+    description,
+    posts: posts.posts,
   };
   return feed;
 };

@@ -13,8 +13,10 @@ export default {
       },
       'load.error': {
         null: '',
-        noRss: 'Ресурс не содержит валидный RSS',
         disconnect: 'Ошибка сети',
+      },
+      'parse.error': {
+        noRss: 'Ресурс не содержит валидный RSS',
       },
     },
   },

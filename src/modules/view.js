@@ -5,17 +5,17 @@ const addFeed = (feeds, list) => {
     li.classList.add('list-group-item', 'border-0', 'border-end-0');
     const h3 = document.createElement('h3');
     h3.classList.add('h6', 'm-0');
-    h3.textContent = item.feedTitle;
+    h3.textContent = item.title;
     li.append(h3);
     const p = document.createElement('p');
     p.classList.add('m-0', 'small', 'text-black-50');
-    p.textContent = item.feedDescription;
+    p.textContent = item.description;
     li.append(p);
     listGroup.prepend(li);
   });
 };
 
-const showFeed = (elements, list) => {
+const renderFeed = (elements, list) => {
   const { feeds } = elements;
   feeds.innerHTML = `<div class="card border-0">
   <div class="card-body">
@@ -31,15 +31,15 @@ const showModal = (e, post) => {
   const modalTitle = document.querySelector('.modal-title');
   const modalBody = document.querySelector('.modal-body');
   const modalFooter = document.querySelector('.modal-footer');
-  modalTitle.textContent = post.postTitle;
-  modalBody.textContent = post.postDescription;
-  modalFooter.querySelector('a').href = post.postLink;
+  modalTitle.textContent = post.title;
+  modalBody.textContent = post.description;
+  modalFooter.querySelector('a').href = post.link;
   const a = e.target.parentNode.querySelector('a');
   a.classList.remove('fw-bold');
   a.classList.add('fw-normal');
 };
 
-const addPosts = (elements, i18n, feeds, update) => {
+const addPosts = (elements, i18n, loaded, update) => {
   const createList = (post, postLink, postTitle, ul) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'border-0', 'border-end-0', 'd-flex', 'justify-content-between', 'align-items-start');
@@ -53,16 +53,16 @@ const addPosts = (elements, i18n, feeds, update) => {
   };
 
   if (!update) {
-    const { feedback, input, posts } = elements;
-    feeds.forEach((item) => {
-      const { feedPosts, feedDescription } = item;
+    const { feedback, input, postsHtml } = elements;
+    loaded.forEach((item) => {
+      const { posts, description } = item;
       const ul = document.createElement('ul');
       ul.classList.add('list-group', 'border-0', 'rounded-0');
-      ul.setAttribute('data-description', feedDescription);
-      posts.append(ul);
-      feedPosts.forEach((post) => {
-        const { postTitle, postLink } = post;
-        createList(post, postLink, postTitle, ul);
+      ul.setAttribute('data-description', description);
+      postsHtml.append(ul);
+      posts.forEach((post) => {
+        const { title, link } = post;
+        createList(post, link, title, ul);
       });
     });
     feedback.textContent = i18n.t('rssLoaded');
@@ -70,23 +70,23 @@ const addPosts = (elements, i18n, feeds, update) => {
     feedback.classList.add('text-success');
     input.classList.remove('is-invalid');
   } else {
-    const { posts } = elements;
-    const ul = posts.querySelector(`[data-description = '${feeds.feedDescription}']`);
+    const { postsHtml } = elements;
+    const ul = postsHtml.querySelector(`[data-description = '${loaded[0]}']`);
     const oldPosts = Array.from(ul.querySelectorAll('li'));
     const oldTitles = oldPosts.map((post) => post.querySelector('a').textContent.trim());
-    const loadedPosts = Object.values(feeds).slice(0, -1);
+    const loadedPosts = loaded.slice(1);
     loadedPosts.forEach((post) => {
-      const { postTitle, postLink } = post;
-      if (!oldTitles.includes(postTitle)) {
-        createList(post, postLink, postTitle, ul);
+      const { title, link } = post;
+      if (!oldTitles.includes(title)) {
+        createList(post, link, title, ul);
       }
     });
   }
 };
 
-const showPosts = (elements) => {
-  const { posts } = elements;
-  posts.innerHTML = `<div class="card border-0">
+const renderPosts = (elements) => {
+  const { postsHtml } = elements;
+  postsHtml.innerHTML = `<div class="card border-0">
   <div class="card-body">
     <h2 class="card-title h4">Посты</h2>
   </div>
@@ -103,8 +103,8 @@ const handleError = (elements, i18n, errorType, errValue) => {
 };
 
 const handleValidUrl = (elements, i18n, value) => {
-  showFeed(elements, value);
-  showPosts(elements);
+  renderFeed(elements, value);
+  renderPosts(elements);
   addPosts(elements, i18n, value, false);
   elements.form.reset();
 };
@@ -113,11 +113,11 @@ const render = (elements, i18n) => (path, value) => {
   switch (path) {
     case 'form.error':
     case 'load.error':
+    case 'parse.error':
       handleError(elements, i18n, path, value);
       break;
-    case 'load.state':
+    case 'load.status':
       switch (value) {
-        case 'readyToLoad':
         case 'loadInProcess':
           elements.input.setAttribute('disabled', '');
           break;
@@ -127,9 +127,9 @@ const render = (elements, i18n) => (path, value) => {
         default: break;
       }
       break;
-    case 'load.feeds':
+    case 'feeds':
       handleValidUrl(elements, i18n, value); break;
-    case 'load.posts': addPosts(elements, i18n, value, true); break;
+    case 'posts': addPosts(elements, i18n, value, true); break;
     default: break;
   }
 };
